@@ -39,6 +39,7 @@ public class MidiBackEnd {
                                 modifiedData1 = Math.min(127, Math.max(0, modifiedData1));
                                 if(radioVel){
                                      modifiedData2 = data2+velocity;
+                                    modifiedData2 = Math.min(127, Math.max(0, modifiedData2));
                                 }
                                 else modifiedData2 = velocity;
 

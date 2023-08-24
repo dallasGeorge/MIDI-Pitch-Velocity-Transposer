@@ -4,10 +4,12 @@ import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.EventObject;
 
 public class MidiFileSelectorAndTable extends JFrame {
     private JTextField midiFilePathField;
@@ -15,7 +17,7 @@ public class MidiFileSelectorAndTable extends JFrame {
     private DefaultTableModel tableModel;
     private JButton createMidis = new JButton("Export");
     private FileFilter fileFilter;
-
+    private boolean isRadVelSelected;
     public MidiFileSelectorAndTable() {
         setTitle("MIDI File Selector");
         setSize(600, 400);
@@ -28,7 +30,7 @@ public class MidiFileSelectorAndTable extends JFrame {
         JButton browseButton = new JButton("Input MIDI");
         JRadioButton radioVel = new JRadioButton("Additive Velocities");
 
-        boolean isRadVelSelected = radioVel.isSelected();
+        isRadVelSelected = radioVel.isSelected();
         midiFilePathField = new JTextField(30);
         midiFilePathField.setEditable(false);
         createMidis.addActionListener(new ActionListener() {
@@ -55,20 +57,33 @@ public class MidiFileSelectorAndTable extends JFrame {
 
                             velocity = Integer.valueOf(cellData);
 
-                        }}
+                        }
+
+
+                        }
                         catch(Exception er){
                             JOptionPane.showMessageDialog(null, "An error occurred!\nInput in table is not correct.", "Error", JOptionPane.ERROR_MESSAGE);
+
+
 
                         }
 
 
                     }
-                    if(velocity<=127 && velocity >= 0){
-                    MidiBackEnd.appendMidiWithPitchVelocity(midiFilePathField.getText(), "output.mid", pitch, velocity,row,isRadVelSelected);
-                        JOptionPane.showMessageDialog(null, "Export was successful. File was saved as: output.mid.", "Export successful", JOptionPane.INFORMATION_MESSAGE);
+                    if(!isRadVelSelected) {
+                        if (velocity <= 127 && velocity >= 0) {
+                            MidiBackEnd.appendMidiWithPitchVelocity(midiFilePathField.getText(), "output.mid", pitch, velocity, row, isRadVelSelected);
+                            JOptionPane.showMessageDialog(null, "Export was successful. File was saved as: output.mid.", "Export successful", JOptionPane.INFORMATION_MESSAGE);
+                        } else
+                            JOptionPane.showMessageDialog(null, "An error occurred!\nVelocity out of range 0-127.", "Error", JOptionPane.ERROR_MESSAGE);
+                            break;
                     }
-                    else JOptionPane.showMessageDialog(null, "An error occurred!\nVelocity out of range 0-127.", "Error", JOptionPane.ERROR_MESSAGE);
-                }}
+                    else {
+                        MidiBackEnd.appendMidiWithPitchVelocity(midiFilePathField.getText(), "output.mid", pitch, velocity, row, isRadVelSelected);
+                        JOptionPane.showMessageDialog(null, "Export was successful. File was saved as: output.mid.", "Export successful", JOptionPane.INFORMATION_MESSAGE);
+
+                    }
+                    }}
                 else{
                     JOptionPane.showMessageDialog(null, "An error occurred!\nPlease select a midi file.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
@@ -121,9 +136,29 @@ public class MidiFileSelectorAndTable extends JFrame {
         };
         addRowToTable();
 
-        inputTable = new JTable(tableModel);
+        inputTable = new JTable(tableModel){
+            @Override
+            public boolean editCellAt(int row, int column, EventObject e)
+            {
+                boolean result = super.editCellAt(row, column, e);
+                final Component editor = getEditorComponent();
 
+                if (editor != null && editor instanceof JTextComponent)
+                {   if(((JTextComponent)editor).getText().equals("-"))
+                    ((JTextComponent)editor).setText("");
+                }
 
+                return result;
+            }
+        };
+
+        radioVel.addActionListener(new ActionListener() {
+            // Anonymous class.
+
+            public void actionPerformed(ActionEvent e)
+            {
+                isRadVelSelected = radioVel.isSelected();
+            }});
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment( JLabel.CENTER );
