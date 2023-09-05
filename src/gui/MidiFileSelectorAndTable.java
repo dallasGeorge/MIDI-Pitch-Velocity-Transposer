@@ -19,7 +19,7 @@ public class MidiFileSelectorAndTable extends JFrame {
     private FileFilter fileFilter;
     private boolean isRadVelSelected;
     public MidiFileSelectorAndTable() {
-        setTitle("MIDI File Selector");
+        setTitle("Inharmonic MIDI Mulator");
         setSize(600, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
